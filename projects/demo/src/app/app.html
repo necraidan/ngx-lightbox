@@ -3,11 +3,17 @@
     <div class="header__brand">
       <span class="header__logo">&#9633;</span>
       <span class="header__name">ngx-lightbox</span>
-      <span class="header__badge">v0.1.0</span>
+      <span class="header__badge">v0.2.0</span>
     </div>
     <nav class="header__links">
       <a href="https://github.com/necraidan/ngx-lightbox" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://www.npmjs.com/package/@necraidan/ngx-lightbox" target="_blank" rel="noopener">npm</a>
+      <a
+        href="https://www.npmjs.com/package/@necraidan/ngx-lightbox"
+        target="_blank"
+        rel="noopener"
+      >
+        npm
+      </a>
     </nav>
   </div>
 </header>
@@ -18,7 +24,7 @@
     <h1 class="hero__title">Angular Lightbox</h1>
     <p class="hero__desc">
       A lightweight, accessible lightbox component for Angular 21+.<br />
-      Zoom, pan, keyboard navigation — zero external dependencies.
+      Zoom, pan, keyboard navigation - zero external dependencies.
     </p>
     <div class="hero__install">
       <code>npm install @necraidan/ngx-lightbox</code>
@@ -84,6 +90,14 @@
       >
         Advanced
       </button>
+      <button
+        class="tab"
+        [class.tab--active]="activeTab() === 'blob'"
+        type="button"
+        (click)="setTab('blob')"
+      >
+        File / Blob
+      </button>
     </div>
 
     @if (activeTab() === 'basic') {
@@ -100,14 +114,21 @@ import &#123; LightboxComponent, LightboxService, LightboxImage &#125; from '@ne
 &#64;Component(&#123;
   imports: [LightboxComponent],
   template: `
-    &lt;button (click)="open(img)"&gt;Open&lt;/button&gt;
+    &lt;button (click)="open(image)"&gt;Open&lt;/button&gt;
     &lt;ngx-lightbox /&gt;
   `,
 &#125;)
 export class YourComponent &#123;
   private lightbox = inject(LightboxService);
 
-  open(img: LightboxImage) &#123;
+  readonly image: LightboxImage = &#123;
+    src: 'https://example.com/photo.jpg',
+    alt: 'A beautiful photo',
+    width: 1200,
+    height: 800,
+  &#125;;
+
+  open(img: LightboxImage): void &#123;
     this.lightbox.openLightbox(img);
   &#125;
 &#125;</code></pre>
@@ -177,6 +198,33 @@ export const appConfig: ApplicationConfig = &#123;
 //   --ngx-lightbox-radius: 0;
 //   --ngx-lightbox-spacing: 1.5rem;
 // &#125;</code></pre>
+    }
+
+    @if (activeTab() === 'blob') {
+      <pre class="code"><code>// Open a local File picked from an &lt;input&gt;
+import &#123; LightboxImage &#125; from '@necraidan/ngx-lightbox';
+
+onFileChange(event: Event): void &#123;
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+
+  const img = new Image();
+  const src = URL.createObjectURL(file);
+  img.onload = () =&gt; &#123;
+    const image: LightboxImage = &#123;
+      src: file,          // pass the File/Blob directly
+      alt: file.name,
+      width: img.naturalWidth,
+      height: img.naturalHeight,
+    &#125;;
+    this.lightbox.openLightbox(image);
+    URL.revokeObjectURL(src); // only needed for the temp img above
+  &#125;;
+  img.src = src;
+&#125;
+
+// The lightbox manages its own object URL lifecycle:
+// createObjectURL on open, revokeObjectURL on close.</code></pre>
     }
   </section>
 
@@ -259,7 +307,7 @@ export const appConfig: ApplicationConfig = &#123;
       </thead>
       <tbody>
         <tr>
-          <td><code>openLightbox(img)</code></td>
+          <td><code>openLightbox(img: LightboxImage): void</code></td>
           <td><code>void</code></td>
           <td>Open lightbox with given image</td>
         </tr>
@@ -269,19 +317,73 @@ export const appConfig: ApplicationConfig = &#123;
           <td>Close the lightbox</td>
         </tr>
         <tr>
-          <td><code>lightboxImage</code></td>
+          <td><code>lightboxImage()</code></td>
           <td><code>Signal&lt;LightboxImage | null&gt;</code></td>
           <td>Currently displayed image</td>
         </tr>
         <tr>
-          <td><code>isZoomed</code></td>
+          <td><code>resolvedSrc()</code></td>
+          <td><code>Signal&lt;string | null&gt;</code></td>
+          <td>
+            Resolved URL string - use this to bind <code>[src]</code> when <code>src</code> may be a
+            Blob
+          </td>
+        </tr>
+        <tr>
+          <td><code>isZoomed()</code></td>
           <td><code>Signal&lt;boolean&gt;</code></td>
           <td>Whether image is zoomed in</td>
         </tr>
         <tr>
-          <td><code>isDragging</code></td>
+          <td><code>isDragging()</code></td>
           <td><code>Signal&lt;boolean&gt;</code></td>
           <td>Whether user is dragging</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3 class="section__subtitle">LightboxImage</h3>
+    <p class="section__desc">
+      The object passed to <code>openLightbox()</code>. All properties are required.
+    </p>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>src</code></td>
+          <td><code>string | Blob</code></td>
+          <td>
+            Image source - URL string, blob URL, or a <code>Blob</code>/<code>File</code> object.
+            The lightbox handles <code>createObjectURL</code> /
+            <code>revokeObjectURL</code> automatically.
+          </td>
+        </tr>
+        <tr>
+          <td><code>alt</code></td>
+          <td><code>string</code></td>
+          <td>
+            Accessible description used as the <code>alt</code> attribute and
+            <code>aria-label</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>width</code></td>
+          <td><code>number</code></td>
+          <td>
+            Intrinsic width in pixels, used to preserve the aspect ratio before the image loads.
+          </td>
+        </tr>
+        <tr>
+          <td><code>height</code></td>
+          <td><code>number</code></td>
+          <td>
+            Intrinsic height in pixels, used to preserve the aspect ratio before the image loads.
+          </td>
         </tr>
       </tbody>
     </table>

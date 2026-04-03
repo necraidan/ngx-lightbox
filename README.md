@@ -1,4 +1,4 @@
-# @necraidan/ngx-lightbox — workspace
+# @necraidan/ngx-lightbox - workspace
 
 Angular workspace for the `@necraidan/ngx-lightbox` library and its demo application.
 
@@ -26,4 +26,4 @@ npx ng serve demo
 
 1. Bump the version in `projects/ngx-lightbox/package.json`
 2. Commit and push
-3. Create a GitHub Release — the publish workflow triggers automatically
+3. Create a GitHub Release - the publish workflow triggers automatically

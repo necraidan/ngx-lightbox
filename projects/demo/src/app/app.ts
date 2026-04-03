@@ -13,7 +13,7 @@ const IMAGES: LightboxImage[] = [
   { src: 'https://picsum.photos/id/96/1200/800', alt: 'Autumn leaves', width: 1200, height: 800 },
 ];
 
-type Tab = 'basic' | 'i18n' | 'advanced';
+type Tab = 'basic' | 'i18n' | 'advanced' | 'blob';
 
 @Component({
   selector: 'app-root',

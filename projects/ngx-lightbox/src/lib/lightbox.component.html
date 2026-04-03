@@ -1,10 +1,10 @@
-@if (lightbox.lightboxImage()) {
+@if (display(); as img) {
   <div
     class="ngx-lightbox"
     tabindex="-1"
     role="dialog"
     aria-modal="true"
-    [attr.aria-label]="lightbox.lightboxImage()!.alt"
+    [attr.aria-label]="img.alt"
     [style.z-index]="config.zIndex"
     (click)="lightbox.closeLightbox()"
     (keydown.escape)="$event.stopPropagation(); lightbox.closeLightbox()"
@@ -24,10 +24,10 @@
       [class.ngx-lightbox__img--zoomed]="lightbox.isZoomed()"
       [class.ngx-lightbox__img--dragging]="lightbox.isDragging()"
       [style.transform]="lightbox.imageTransform()"
-      [src]="lightbox.lightboxImage()!.src"
-      [alt]="lightbox.lightboxImage()!.alt"
-      [width]="lightbox.lightboxImage()!.width"
-      [height]="lightbox.lightboxImage()!.height"
+      [src]="img.src"
+      [alt]="img.alt"
+      [width]="img.width"
+      [height]="img.height"
       (click)="$event.stopPropagation()"
       (dblclick)="$event.stopPropagation(); lightbox.toggleZoom()"
       (pointerdown)="lightbox.startDrag($event)"
