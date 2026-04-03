@@ -4,6 +4,7 @@ A lightweight, accessible lightbox component for Angular 21+.
 Zoom, pan, pinch-to-zoom, keyboard navigation — zero external dependencies.
 
 [![npm](https://img.shields.io/npm/v/@necraidan/ngx-lightbox)](https://www.npmjs.com/package/@necraidan/ngx-lightbox)
+[![CI](https://github.com/necraidan/ngx-lightbox/actions/workflows/ci.yml/badge.svg)](https://github.com/necraidan/ngx-lightbox/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/necraidan/ngx-lightbox/blob/main/LICENSE)
 [![Angular](https://img.shields.io/badge/Angular-21%2B-DD0031)](https://angular.dev)
 
