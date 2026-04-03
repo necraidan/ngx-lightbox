@@ -1,0 +1,44 @@
+@if (lightbox.lightboxImage()) {
+  <div
+    class="ngx-lightbox"
+    tabindex="-1"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="lightbox.lightboxImage()!.alt"
+    [style.z-index]="config.zIndex"
+    (click)="lightbox.closeLightbox()"
+    (keydown.escape)="$event.stopPropagation(); lightbox.closeLightbox()"
+    (wheel)="lightbox.onWheel($event)"
+  >
+    <button
+      class="ngx-lightbox__close"
+      type="button"
+      [attr.aria-label]="i18n.closeLabel"
+      (click)="$event.stopPropagation(); lightbox.closeLightbox()"
+    >
+      ✕
+    </button>
+
+    <img
+      class="ngx-lightbox__img"
+      [class.ngx-lightbox__img--zoomed]="lightbox.isZoomed()"
+      [class.ngx-lightbox__img--dragging]="lightbox.isDragging()"
+      [style.transform]="lightbox.imageTransform()"
+      [src]="lightbox.lightboxImage()!.src"
+      [alt]="lightbox.lightboxImage()!.alt"
+      [width]="lightbox.lightboxImage()!.width"
+      [height]="lightbox.lightboxImage()!.height"
+      (click)="$event.stopPropagation()"
+      (dblclick)="$event.stopPropagation(); lightbox.toggleZoom()"
+      (pointerdown)="lightbox.startDrag($event)"
+      (pointermove)="lightbox.onDrag($event)"
+      (pointerup)="lightbox.endDrag($event)"
+      (pointercancel)="lightbox.endDrag($event)"
+    />
+
+    @if (config.showHint) {
+      <p class="ngx-lightbox__hint ngx-lightbox__hint--desktop">{{ i18n.hint }}</p>
+      <p class="ngx-lightbox__hint ngx-lightbox__hint--mobile">{{ i18n.hintMobile }}</p>
+    }
+  </div>
+}

@@ -1,0 +1,300 @@
+<header class="header">
+  <div class="header__inner">
+    <div class="header__brand">
+      <span class="header__logo">&#9633;</span>
+      <span class="header__name">ngx-lightbox</span>
+      <span class="header__badge">v0.1.0</span>
+    </div>
+    <nav class="header__links">
+      <a href="https://github.com/necraidan/ngx-lightbox" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.npmjs.com/package/@necraidan/ngx-lightbox" target="_blank" rel="noopener">npm</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero">
+    <h1 class="hero__title">Angular Lightbox</h1>
+    <p class="hero__desc">
+      A lightweight, accessible lightbox component for Angular 21+.<br />
+      Zoom, pan, keyboard navigation — zero external dependencies.
+    </p>
+    <div class="hero__install">
+      <code>npm install @necraidan/ngx-lightbox</code>
+    </div>
+    <div class="hero__chips">
+      <span class="chip">Angular 21+</span>
+      <span class="chip">Signals API</span>
+      <span class="chip">Standalone</span>
+      <span class="chip">i18n</span>
+      <span class="chip">Zero deps</span>
+    </div>
+  </section>
+
+  <!-- Live demo -->
+  <section class="section">
+    <h2 class="section__title">Try it</h2>
+    <p class="section__desc">
+      Click any image to open the lightbox. Double-click or scroll to zoom. Drag to pan.
+    </p>
+    <div class="grid">
+      @for (img of images; track img.src) {
+        <button class="grid__item" type="button" (click)="open(img)">
+          <img
+            class="grid__thumb"
+            [src]="img.src.replace('1200/800', '400/300')"
+            [alt]="img.alt"
+            width="400"
+            height="300"
+            loading="lazy"
+          />
+          <span class="grid__label">{{ img.alt }}</span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Code snippets -->
+  <section class="section">
+    <h2 class="section__title">Usage</h2>
+
+    <div class="tabs">
+      <button
+        class="tab"
+        [class.tab--active]="activeTab() === 'basic'"
+        type="button"
+        (click)="setTab('basic')"
+      >
+        Basic
+      </button>
+      <button
+        class="tab"
+        [class.tab--active]="activeTab() === 'i18n'"
+        type="button"
+        (click)="setTab('i18n')"
+      >
+        i18n
+      </button>
+      <button
+        class="tab"
+        [class.tab--active]="activeTab() === 'advanced'"
+        type="button"
+        (click)="setTab('advanced')"
+      >
+        Advanced
+      </button>
+    </div>
+
+    @if (activeTab() === 'basic') {
+      <pre class="code"><code>// app.config.ts
+import &#123; provideNgxLightbox &#125; from '@necraidan/ngx-lightbox';
+
+export const appConfig: ApplicationConfig = &#123;
+  providers: [provideNgxLightbox()],
+&#125;;
+
+// your.component.ts
+import &#123; LightboxComponent, LightboxService, LightboxImage &#125; from '@necraidan/ngx-lightbox';
+
+&#64;Component(&#123;
+  imports: [LightboxComponent],
+  template: `
+    &lt;button (click)="open(img)"&gt;Open&lt;/button&gt;
+    &lt;ngx-lightbox /&gt;
+  `,
+&#125;)
+export class YourComponent &#123;
+  private lightbox = inject(LightboxService);
+
+  open(img: LightboxImage) &#123;
+    this.lightbox.openLightbox(img);
+  &#125;
+&#125;</code></pre>
+    }
+
+    @if (activeTab() === 'i18n') {
+      <pre class="code"><code>// Provide custom translations
+import &#123; provideNgxLightbox &#125; from '@necraidan/ngx-lightbox';
+
+export const appConfig: ApplicationConfig = &#123;
+  providers: [
+    provideNgxLightbox(
+      &#123; showHint: true &#125;,       // config
+      &#123;                          // i18n
+        closeLabel: 'Fermer',
+        hint: 'Double-clic pour zoomer · Molette · Glisser',
+        hintMobile: 'Pincez pour zoomer · Glisser pour déplacer',
+      &#125;,
+    ),
+  ],
+&#125;;
+
+// Available built-in translations:
+
+// English (default)
+&#123;
+  closeLabel: 'Close',
+  hint: 'Double-click to zoom · Scroll to adjust · Drag to pan',
+  hintMobile: 'Pinch to zoom · Drag to pan',
+&#125;
+
+// French
+&#123;
+  closeLabel: 'Fermer',
+  hint: 'Double-clic pour zoomer · Molette pour ajuster · Glisser pour déplacer',
+  hintMobile: 'Pincez pour zoomer · Glisser pour déplacer',
+&#125;
+
+// Spanish
+&#123;
+  closeLabel: 'Cerrar',
+  hint: 'Doble clic para ampliar · Rueda para ajustar · Arrastrar para mover',
+  hintMobile: 'Pellizcar para ampliar · Arrastrar para mover',
+&#125;</code></pre>
+    }
+
+    @if (activeTab() === 'advanced') {
+      <pre class="code"><code>// Full configuration
+import &#123; provideNgxLightbox, LightboxConfig, LightboxI18n &#125; from '@necraidan/ngx-lightbox';
+
+const config: Partial&lt;LightboxConfig&gt; = &#123;
+  showHint: false,   // hide the zoom/pan hint
+  maxScale: 8,       // allow up to 8x zoom (default: 5)
+  zIndex: 9999,      // overlay z-index (default: 1000)
+&#125;;
+
+export const appConfig: ApplicationConfig = &#123;
+  providers: [provideNgxLightbox(config)],
+&#125;;
+
+// CSS custom properties for styling
+// --ngx-lightbox-radius   border-radius of the image  (default: 0.5rem)
+// --ngx-lightbox-spacing  spacing for close btn/hint  (default: 1rem)
+
+// Example:
+// :root &#123;
+//   --ngx-lightbox-radius: 0;
+//   --ngx-lightbox-spacing: 1.5rem;
+// &#125;</code></pre>
+    }
+  </section>
+
+  <!-- API Reference -->
+  <section class="section">
+    <h2 class="section__title">API Reference</h2>
+
+    <h3 class="section__subtitle">LightboxConfig</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>showHint</code></td>
+          <td><code>boolean</code></td>
+          <td><code>true</code></td>
+          <td>Show the zoom/pan hint</td>
+        </tr>
+        <tr>
+          <td><code>maxScale</code></td>
+          <td><code>number</code></td>
+          <td><code>5</code></td>
+          <td>Maximum zoom level</td>
+        </tr>
+        <tr>
+          <td><code>zIndex</code></td>
+          <td><code>number</code></td>
+          <td><code>1000</code></td>
+          <td>Overlay z-index</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="section__subtitle">LightboxI18n</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>closeLabel</code></td>
+          <td><code>string</code></td>
+          <td><code>'Close'</code></td>
+          <td>aria-label for the close button</td>
+        </tr>
+        <tr>
+          <td><code>hint</code></td>
+          <td><code>string</code></td>
+          <td><code>'Double-click to zoom…'</code></td>
+          <td>Hint text on desktop (mouse/trackpad)</td>
+        </tr>
+        <tr>
+          <td><code>hintMobile</code></td>
+          <td><code>string</code></td>
+          <td><code>'Pinch to zoom…'</code></td>
+          <td>Hint text on touch devices</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="section__subtitle">LightboxService</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>openLightbox(img)</code></td>
+          <td><code>void</code></td>
+          <td>Open lightbox with given image</td>
+        </tr>
+        <tr>
+          <td><code>closeLightbox()</code></td>
+          <td><code>void</code></td>
+          <td>Close the lightbox</td>
+        </tr>
+        <tr>
+          <td><code>lightboxImage</code></td>
+          <td><code>Signal&lt;LightboxImage | null&gt;</code></td>
+          <td>Currently displayed image</td>
+        </tr>
+        <tr>
+          <td><code>isZoomed</code></td>
+          <td><code>Signal&lt;boolean&gt;</code></td>
+          <td>Whether image is zoomed in</td>
+        </tr>
+        <tr>
+          <td><code>isDragging</code></td>
+          <td><code>Signal&lt;boolean&gt;</code></td>
+          <td>Whether user is dragging</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>
+    MIT License &middot;
+    <a href="https://github.com/necraidan/ngx-lightbox" target="_blank" rel="noopener"
+      >github.com/necraidan/ngx-lightbox</a
+    >
+  </p>
+</footer>
+
+<ngx-lightbox />

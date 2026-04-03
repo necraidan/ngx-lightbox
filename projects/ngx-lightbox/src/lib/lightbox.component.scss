@@ -1,0 +1,110 @@
+.ngx-lightbox {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.88);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  outline: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  // Prevent browser-level scroll and native pinch-zoom inside the overlay
+  touch-action: none;
+
+  animation: ngx-lightbox-in 180ms ease both;
+}
+
+@keyframes ngx-lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ngx-lightbox__img {
+  border-radius: var(--ngx-lightbox-radius, 0.5rem);
+  cursor: zoom-in;
+  display: block;
+  max-height: 90vh;
+  max-width: 90vw;
+  object-fit: contain;
+  // Required: lets pointer events fire without browser interference on touch
+  touch-action: none;
+  transition: transform 0.15s ease;
+  user-select: none;
+  width: auto;
+  will-change: transform;
+}
+
+.ngx-lightbox__img--zoomed {
+  cursor: grab;
+  max-height: none;
+  max-width: none;
+  transition: transform 0.08s ease;
+}
+
+.ngx-lightbox__img--dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.ngx-lightbox__close {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.125rem;
+  height: 40px;
+  line-height: 1;
+  position: fixed;
+  right: var(--ngx-lightbox-spacing, 1rem);
+  top: var(--ngx-lightbox-spacing, 1rem);
+  // Larger tap target on touch
+  min-width: 44px;
+  min-height: 44px;
+  transition: background 150ms ease;
+  width: 40px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.ngx-lightbox__hint {
+  bottom: var(--ngx-lightbox-spacing, 1rem);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  left: 50%;
+  letter-spacing: 0.04em;
+  margin: 0;
+  pointer-events: none;
+  position: fixed;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+// Desktop hint: shown on devices with a precise pointer (mouse/trackpad)
+// Mobile hint: shown on coarse/touch devices
+.ngx-lightbox__hint--mobile {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .ngx-lightbox__hint--desktop {
+    display: none;
+  }
+
+  .ngx-lightbox__hint--mobile {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ngx-lightbox {
+    animation: none;
+  }
+}

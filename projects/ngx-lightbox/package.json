@@ -1,0 +1,31 @@
+{
+  "name": "@necraidan/ngx-lightbox",
+  "version": "0.1.0",
+  "description": "A zero-dependency Angular lightbox component with zoom and pan support",
+  "keywords": [
+    "angular",
+    "lightbox",
+    "zoom",
+    "pan",
+    "gallery",
+    "image",
+    "signals"
+  ],
+  "author": "Benjamin Auzanneau (necraidan)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/necraidan/ngx-lightbox.git"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=21.0.0",
+    "@angular/core": ">=21.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}

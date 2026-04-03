@@ -1,0 +1,142 @@
+import { isPlatformBrowser } from '@angular/common';
+import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { LIGHTBOX_CONFIG } from './lightbox.config';
+import { LightboxImage } from './lightbox.types';
+
+const MIN_SCALE = 1;
+const ZOOM_STEP = 0.2;
+const ZOOM_TOGGLE = 2.5;
+
+@Injectable({ providedIn: 'root' })
+export class LightboxService {
+  private readonly config = inject(LIGHTBOX_CONFIG);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  readonly lightboxImage = signal<LightboxImage | null>(null);
+
+  private readonly _scale = signal(1);
+  private readonly _tx = signal(0);
+  private readonly _ty = signal(0);
+  readonly isDragging = signal(false);
+
+  readonly isZoomed = computed(() => this._scale() > 1);
+
+  readonly imageTransform = computed(() => {
+    const s = this._scale();
+    const tx = this._tx();
+    const ty = this._ty();
+    return s === 1 && tx === 0 && ty === 0 ? 'none' : `translate(${tx}px, ${ty}px) scale(${s})`;
+  });
+
+  // Single-pointer drag state
+  private _dragLastX = 0;
+  private _dragLastY = 0;
+
+  // Multi-pointer pinch state
+  private readonly _activePointers = new Map<number, { x: number; y: number }>();
+  private _pinchStartDistance = 0;
+  private _pinchStartScale = 1;
+
+  // Open / close
+
+  openLightbox(img: LightboxImage): void {
+    this.lightboxImage.set(img);
+    this._resetZoom();
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => document.querySelector<HTMLElement>('.ngx-lightbox')?.focus(), 0);
+    }
+  }
+
+  closeLightbox(): void {
+    this.lightboxImage.set(null);
+    this._resetZoom();
+  }
+
+  // Zoom (desktop: scroll wheel / double-click)
+
+  toggleZoom(): void {
+    if (this._scale() > 1) {
+      this._resetZoom();
+    } else {
+      this._scale.set(ZOOM_TOGGLE);
+    }
+  }
+
+  onWheel(event: WheelEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const delta = event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+    const newScale = Math.min(Math.max(this._scale() + delta, MIN_SCALE), this.config.maxScale);
+    this._scale.set(newScale);
+    if (newScale === MIN_SCALE) {
+      this._tx.set(0);
+      this._ty.set(0);
+    }
+  }
+
+  // Pan & pinch-to-zoom (pointer events — works for both mouse and touch)
+
+  startDrag(event: PointerEvent): void {
+    this._activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+
+    if (this._activePointers.size === 2) {
+      // Second finger arrived — switch from single drag to pinch
+      this.isDragging.set(false);
+      const [p1, p2] = [...this._activePointers.values()];
+      this._pinchStartDistance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      this._pinchStartScale = this._scale();
+      return;
+    }
+
+    // Single pointer — only start panning when already zoomed
+    if (!this.isZoomed()) return;
+    event.preventDefault();
+    this.isDragging.set(true);
+    this._dragLastX = event.clientX;
+    this._dragLastY = event.clientY;
+  }
+
+  onDrag(event: PointerEvent): void {
+    if (!this._activePointers.has(event.pointerId)) return;
+    this._activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (this._activePointers.size === 2) {
+      // Pinch gesture — scale relative to where the pinch started
+      const [p1, p2] = [...this._activePointers.values()];
+      const distance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      if (this._pinchStartDistance === 0) return;
+      const newScale = Math.min(
+        Math.max(this._pinchStartScale * (distance / this._pinchStartDistance), MIN_SCALE),
+        this.config.maxScale,
+      );
+      this._scale.set(newScale);
+      if (newScale === MIN_SCALE) {
+        this._tx.set(0);
+        this._ty.set(0);
+      }
+      return;
+    }
+
+    if (!this.isDragging()) return;
+    const dx = event.clientX - this._dragLastX;
+    const dy = event.clientY - this._dragLastY;
+    this._dragLastX = event.clientX;
+    this._dragLastY = event.clientY;
+    this._tx.update((v) => v + dx);
+    this._ty.update((v) => v + dy);
+  }
+
+  endDrag(event: PointerEvent): void {
+    this._activePointers.delete(event.pointerId);
+    this.isDragging.set(false);
+  }
+
+  private _resetZoom(): void {
+    this._scale.set(1);
+    this._tx.set(0);
+    this._ty.set(0);
+    this.isDragging.set(false);
+    this._activePointers.clear();
+  }
+}
