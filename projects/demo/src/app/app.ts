@@ -13,7 +13,7 @@ const IMAGES: LightboxImage[] = [
   { src: 'https://picsum.photos/id/96/1200/800', alt: 'Autumn leaves', width: 1200, height: 800 },
 ];
 
-type Tab = 'basic' | 'i18n' | 'advanced';
+type Tab = 'basic' | 'i18n' | 'advanced' | 'blob';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +28,10 @@ export class App {
 
   protected setTab(tab: Tab): void {
     this.activeTab.set(tab);
+  }
+
+  protected thumbSrc(img: LightboxImage): string {
+    return typeof img.src === 'string' ? img.src.replace('1200/800', '400/300') : '';
   }
 
   protected open(img: LightboxImage): void {

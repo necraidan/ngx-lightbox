@@ -17,6 +17,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - run: npm ci
       - run: npx ng build ngx-lightbox
+      - run: cp README.md dist/ngx-lightbox/
       - run: npm publish ./dist/ngx-lightbox
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

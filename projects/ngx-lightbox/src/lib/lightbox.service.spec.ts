@@ -79,6 +79,46 @@ describe('LightboxService', () => {
     });
   });
 
+  describe('resolvedSrc', () => {
+    it('returns null when no image is open', () => {
+      expect(service.resolvedSrc()).toBeNull();
+    });
+
+    it('returns the string src directly', () => {
+      service.openLightbox(IMAGE);
+      expect(service.resolvedSrc()).toBe('/img.jpg');
+    });
+
+    it('returns a blob URL when src is a Blob', () => {
+      const blob = new Blob([''], { type: 'image/png' });
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+      service.openLightbox({ src: blob, alt: 'Blob image', width: 100, height: 100 });
+      expect(service.resolvedSrc()).toBe('blob:mock-url');
+      vi.restoreAllMocks();
+    });
+
+    it('revokes object URL on close', () => {
+      const blob = new Blob([''], { type: 'image/png' });
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+      const revokeSpy = vi.spyOn(URL, 'revokeObjectURL');
+      service.openLightbox({ src: blob, alt: 'Blob image', width: 100, height: 100 });
+      service.closeLightbox();
+      expect(revokeSpy).toHaveBeenCalledWith('blob:mock-url');
+      expect(service.resolvedSrc()).toBeNull();
+      vi.restoreAllMocks();
+    });
+
+    it('revokes previous object URL when opening a new image', () => {
+      const blob = new Blob([''], { type: 'image/png' });
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
+      const revokeSpy = vi.spyOn(URL, 'revokeObjectURL');
+      service.openLightbox({ src: blob, alt: 'Blob image', width: 100, height: 100 });
+      service.openLightbox(IMAGE);
+      expect(revokeSpy).toHaveBeenCalledWith('blob:mock-url');
+      vi.restoreAllMocks();
+    });
+  });
+
   describe('onWheel', () => {
     beforeEach(() => service.openLightbox(IMAGE));
 

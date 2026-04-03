@@ -11,7 +11,19 @@ export class LightboxService {
   private readonly config = inject(LIGHTBOX_CONFIG);
   private readonly injector = inject(Injector);
 
-  readonly lightboxImage = signal<LightboxImage | null>(null);
+  private readonly _lightboxImage = signal<LightboxImage | null>(null);
+  private readonly _objectUrl = signal<string | null>(null);
+
+  readonly lightboxImage = this._lightboxImage.asReadonly();
+
+  /** Resolved string URL ready to bind to `[src]`. Handles both string and Blob sources. */
+  readonly resolvedSrc = computed<string | null>(() => {
+    const img = this._lightboxImage();
+    if (!img) {
+      return null;
+    }
+    return img.src instanceof Blob ? this._objectUrl() : img.src;
+  });
 
   private readonly _scale = signal(1);
   private readonly _tx = signal(0);
@@ -35,7 +47,11 @@ export class LightboxService {
   private _pinchStartScale = 1;
 
   openLightbox(img: LightboxImage): void {
-    this.lightboxImage.set(img);
+    this._revokeObjectUrl();
+    if (img.src instanceof Blob) {
+      this._objectUrl.set(URL.createObjectURL(img.src));
+    }
+    this._lightboxImage.set(img);
     this._resetZoom();
     afterNextRender(() => document.querySelector<HTMLElement>('.ngx-lightbox')?.focus(), {
       injector: this.injector,
@@ -43,7 +59,8 @@ export class LightboxService {
   }
 
   closeLightbox(): void {
-    this.lightboxImage.set(null);
+    this._revokeObjectUrl();
+    this._lightboxImage.set(null);
     this._resetZoom();
   }
 
@@ -79,7 +96,9 @@ export class LightboxService {
       return;
     }
 
-    if (!this.isZoomed()) return;
+    if (!this.isZoomed()) {
+      return;
+    }
     event.preventDefault();
     this.isDragging.set(true);
     this._dragLastX = event.clientX;
@@ -87,13 +106,17 @@ export class LightboxService {
   }
 
   onDrag(event: PointerEvent): void {
-    if (!this._activePointers.has(event.pointerId)) return;
+    if (!this._activePointers.has(event.pointerId)) {
+      return;
+    }
     this._activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
     if (this._activePointers.size === 2) {
       const [p1, p2] = [...this._activePointers.values()];
       const distance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      if (this._pinchStartDistance === 0) return;
+      if (this._pinchStartDistance === 0) {
+        return;
+      }
       const newScale = Math.min(
         Math.max(this._pinchStartScale * (distance / this._pinchStartDistance), MIN_SCALE),
         this.config.maxScale,
@@ -106,7 +129,9 @@ export class LightboxService {
       return;
     }
 
-    if (!this.isDragging()) return;
+    if (!this.isDragging()) {
+      return;
+    }
     const dx = event.clientX - this._dragLastX;
     const dy = event.clientY - this._dragLastY;
     this._dragLastX = event.clientX;
@@ -118,6 +143,14 @@ export class LightboxService {
   endDrag(event: PointerEvent): void {
     this._activePointers.delete(event.pointerId);
     this.isDragging.set(false);
+  }
+
+  private _revokeObjectUrl(): void {
+    const url = this._objectUrl();
+    if (url) {
+      URL.revokeObjectURL(url);
+      this._objectUrl.set(null);
+    }
   }
 
   private _resetZoom(): void {
