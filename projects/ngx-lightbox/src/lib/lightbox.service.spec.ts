@@ -20,10 +20,6 @@ describe('LightboxService', () => {
     service = TestBed.inject(LightboxService);
   });
 
-  // -------------------------------------------------------------------------
-  // open / close
-  // -------------------------------------------------------------------------
-
   describe('openLightbox', () => {
     it('sets lightboxImage', () => {
       service.openLightbox(IMAGE);
@@ -55,10 +51,6 @@ describe('LightboxService', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // toggleZoom
-  // -------------------------------------------------------------------------
-
   describe('toggleZoom', () => {
     it('zooms in from scale 1', () => {
       service.openLightbox(IMAGE);
@@ -75,10 +67,6 @@ describe('LightboxService', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // imageTransform computed
-  // -------------------------------------------------------------------------
-
   describe('imageTransform', () => {
     it('returns "none" at default state', () => {
       expect(service.imageTransform()).toBe('none');
@@ -90,10 +78,6 @@ describe('LightboxService', () => {
       expect(service.imageTransform()).toMatch(/translate\(0px, 0px\) scale\(2\.5\)/);
     });
   });
-
-  // -------------------------------------------------------------------------
-  // onWheel
-  // -------------------------------------------------------------------------
 
   describe('onWheel', () => {
     beforeEach(() => service.openLightbox(IMAGE));
@@ -125,10 +109,6 @@ describe('LightboxService', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // drag
-  // -------------------------------------------------------------------------
-
   describe('drag', () => {
     beforeEach(() => {
       service.openLightbox(IMAGE);
@@ -141,7 +121,7 @@ describe('LightboxService', () => {
     });
 
     it('does not start dragging when not zoomed', () => {
-      service.toggleZoom(); // back to scale 1
+      service.toggleZoom();
       service.startDrag(makePointerEvent(1, 100, 100));
       expect(service.isDragging()).toBe(false);
     });
@@ -166,17 +146,12 @@ describe('LightboxService', () => {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // pinch-to-zoom
-  // -------------------------------------------------------------------------
-
   describe('pinch', () => {
     beforeEach(() => service.openLightbox(IMAGE));
 
     it('zooms in when fingers spread apart', () => {
       service.startDrag(makePointerEvent(1, 0, 0));
       service.startDrag(makePointerEvent(2, 100, 0));
-      // spread: pointer 2 moves to 200px → distance doubles
       service.onDrag(new PointerEvent('pointermove', { pointerId: 1, clientX: 0, clientY: 0 }));
       service.onDrag(new PointerEvent('pointermove', { pointerId: 2, clientX: 200, clientY: 0 }));
       expect(service.isZoomed()).toBe(true);
