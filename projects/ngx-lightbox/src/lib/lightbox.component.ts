@@ -8,7 +8,7 @@ import { LightboxService } from './lightbox.service';
   styleUrl: './lightbox.component.scss',
 })
 export class LightboxComponent {
-  readonly lightbox = inject(LightboxService);
-  readonly i18n = inject(LIGHTBOX_I18N);
-  readonly config = inject(LIGHTBOX_CONFIG);
+  protected readonly lightbox = inject(LightboxService);
+  protected readonly i18n = inject(LIGHTBOX_I18N);
+  protected readonly config = inject(LIGHTBOX_CONFIG);
 }

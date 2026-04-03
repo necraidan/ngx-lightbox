@@ -1,5 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
-import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { Injectable, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { LIGHTBOX_CONFIG } from './lightbox.config';
 import { LightboxImage } from './lightbox.types';
 
@@ -10,7 +9,7 @@ const ZOOM_TOGGLE = 2.5;
 @Injectable({ providedIn: 'root' })
 export class LightboxService {
   private readonly config = inject(LIGHTBOX_CONFIG);
-  private readonly platformId = inject(PLATFORM_ID);
+  private readonly injector = inject(Injector);
 
   readonly lightboxImage = signal<LightboxImage | null>(null);
 
@@ -28,31 +27,25 @@ export class LightboxService {
     return s === 1 && tx === 0 && ty === 0 ? 'none' : `translate(${tx}px, ${ty}px) scale(${s})`;
   });
 
-  // Single-pointer drag state
   private _dragLastX = 0;
   private _dragLastY = 0;
 
-  // Multi-pointer pinch state
   private readonly _activePointers = new Map<number, { x: number; y: number }>();
   private _pinchStartDistance = 0;
   private _pinchStartScale = 1;
 
-  // Open / close
-
   openLightbox(img: LightboxImage): void {
     this.lightboxImage.set(img);
     this._resetZoom();
-    if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => document.querySelector<HTMLElement>('.ngx-lightbox')?.focus(), 0);
-    }
+    afterNextRender(() => document.querySelector<HTMLElement>('.ngx-lightbox')?.focus(), {
+      injector: this.injector,
+    });
   }
 
   closeLightbox(): void {
     this.lightboxImage.set(null);
     this._resetZoom();
   }
-
-  // Zoom (desktop: scroll wheel / double-click)
 
   toggleZoom(): void {
     if (this._scale() > 1) {
@@ -74,14 +67,11 @@ export class LightboxService {
     }
   }
 
-  // Pan & pinch-to-zoom (pointer events — works for both mouse and touch)
-
   startDrag(event: PointerEvent): void {
     this._activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
 
     if (this._activePointers.size === 2) {
-      // Second finger arrived — switch from single drag to pinch
       this.isDragging.set(false);
       const [p1, p2] = [...this._activePointers.values()];
       this._pinchStartDistance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -89,7 +79,6 @@ export class LightboxService {
       return;
     }
 
-    // Single pointer — only start panning when already zoomed
     if (!this.isZoomed()) return;
     event.preventDefault();
     this.isDragging.set(true);
@@ -102,7 +91,6 @@ export class LightboxService {
     this._activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
     if (this._activePointers.size === 2) {
-      // Pinch gesture — scale relative to where the pinch started
       const [p1, p2] = [...this._activePointers.values()];
       const distance = Math.hypot(p2.x - p1.x, p2.y - p1.y);
       if (this._pinchStartDistance === 0) return;
